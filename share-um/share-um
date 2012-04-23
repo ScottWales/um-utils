@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# Get a list of all files referenced by a UM basis file.
+# Assumes that there is one path per line, and that each path
+# is surrounded by single quotes
+
+# Usage is share-um [INPUT]
+# Where INPUT is a UM basis file or '-' to use STDIN (Default value '-')
+
+# Scott Wales April 2012
+
+set -x
+
+INPUT=${1:-}
+temp=$TMPDIR/share-um.$$
+
+echo "# Analysing $INPUT" >&2
+
+# Condense spaces
+sed -e 's/\s\+/ /g' $INPUT > $temp
+
+# Extract strings
+sed -e "s/.*'\(.*\)'.*/\1/" -i $temp
+
+# Remove lines with internal spaces, assume these are 
+# not paths
+sed -e '/\S\s\+\S/d' -i $temp
+
+# Search for paths and output
+grep '/' $temp
+
+# Clean up
+rm $temp
