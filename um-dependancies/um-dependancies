@@ -33,7 +33,7 @@
 
 function usage {
     echo "$0: Create a script to list UM file dependancies"
-    echo "Usage: $0 INPUTS > OUTPUT"
+    echo "Usage: $0 INPUTS ... > OUTPUT"
     echo "INPUTS: UM basis files"
     echo "OUTPUT: Shell script that when run lists used files"
 }
@@ -55,17 +55,27 @@ if [ "$#" -lt 1 ]; then
     exit 1
 fi
 
-# Store the environment variables separately
-tmpenv=$TMPDIR/$0-env.$$
+# Hold parts in separate temp files, to be pasted together in the output
 envar_name=$TMPDIR/$0-envname.$$
 envar_val=$TMPDIR/$0-envval.$$
-tmpancil=$TMPDIR/$0-ancil.$$
 apath=$TMPDIR/$0-apath.$$
 afile=$TMPDIR/$0-afile.$$
 
+# Output script header
+echo "#!/bin/bash"
+cat << EOF
+#
+# Displays a list of files referenced in the UM basis files:
+# $@
+#
+
+EOF
+
 # Handle multiple basis files
 for file in "$@"; do
+    echo "#===================="
     echo "# $file";
+    echo "#===================="
 
     # Regulare expressions match 
     # VAR = ' foo bar '
@@ -75,16 +85,33 @@ for file in "$@"; do
     # Leading and trailing spaces are removed from values (internal spaces preserved)
     # Matches are done between the variable declaration and the next line not ending with ,
 
+    echo "# UMUI Environment variables"
     sed -n $file -e '/\<ENVAR_NAME=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' > $envar_name
     sed -n $file -e '/\<ENVAR_VAL=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' > $envar_val
-    paste --delimiters="=" $envar_name $envar_val >> $tmpenv
-    cat $tmpenv
+    paste --delimiters="=" $envar_name $envar_val
     echo
 
+    echo "# List of referenced files"
+    echo "cat << EOF"
+
+    # Ancillaries
     sed -n $file -e '/\<APATH=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' > $apath
     sed -n $file -e '/\<AFILE=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' > $afile
-    paste --delimiters="/" $apath $afile >> $tmpancil
-    cat $tmpancil
+    paste --delimiters="/" $apath $afile
+    echo
+    
+    # Hand edits
+    sed -n $file -e '/\<HEDFILE=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p'
+    echo
+
+    # Stashmaster, User Stash and Stash Prognostics
+    sed -n $file -e '/\<SMDIR=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1/STASHMASTER_A|p'
+    sed -n $file -e '/\<USERLST_A=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p'
+    sed -n $file -e '/\<USRP_FILE_A=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p'
+    echo
+
+    echo "EOF"
+    echo
 done
 
-rm -f $tmpenv $tmpfiles $envar_name $envar_val
+rm -f $envar_name $envar_val $apath $afile
