@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# Create a script that lists file dependancies of UMUI basis files.
+
+# A script is created because environment variables may be set up differently
+# on the local and remote machines. Running the script will produce a list of
+# files.
+
+function usage {
+    echo "$0: Create a script to list UM file dependancies"
+    echo "Usage: $0 INPUTS > OUTPUT"
+    echo "INPUTS: UM basis files"
+    echo "OUTPUT: Shell script that when run lists used files"
+}
+
+options=$(getopt --options h --longoptions help -- "$@")
+eval set -- "$options"
+
+while true; do
+    case "$1" in
+        -h|--help)
+            usage; shift ;;
+        --)
+            shift; break ;;
+    esac
+done
+
+if [ "$#" -lt 1 ]; then
+    echo "No input" >&2
+    exit 1
+fi
+
+# Store the environment variables separately
+tmpenv=$TMPDIR/$0-env.$$
+envar_name=$TMPDIR/$0-envname.$$
+envar_val=$TMPDIR/$0-envval.$$
+tmpancil=$TMPDIR/$0-ancil.$$
+apath=$TMPDIR/$0-apath.$$
+afile=$TMPDIR/$0-afile.$$
+
+# Handle multiple basis files
+for file in "$@"; do
+    echo "# $file";
+
+    # Regulare expressions match 
+    # VAR = ' foo bar '
+    # VAR = ' one ',
+    #       ' two ',
+    #       ' three '
+    # Leading and trailing spaces are removed from values (internal spaces preserved)
+    # Matches are done between the variable declaration and the next line not ending with ,
+
+    sed -n $file -e '/\<ENVAR_NAME=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' > $envar_name
+    sed -n $file -e '/\<ENVAR_VAL=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' > $envar_val
+    paste --delimiters="=" $envar_name $envar_val >> $tmpenv
+    cat $tmpenv
+    echo
+
+    sed -n $file -e '/\<APATH=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' > $apath
+    sed -n $file -e '/\<AFILE=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' > $afile
+    paste --delimiters="/" $apath $afile >> $tmpancil
+    cat $tmpancil
+done
+
+rm -f $tmpenv $tmpfiles $envar_name $envar_val
