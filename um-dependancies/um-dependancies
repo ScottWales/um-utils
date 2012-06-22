@@ -28,7 +28,8 @@
 #
 # A script is created because environment variables may be set up differently
 # on the local and remote machines. Running the script will produce a list of
-# files.
+# files. Note that even if a file is referenced in a UM basis that file may
+# be ignored due to other configuration options.
 #
 
 function usage {
@@ -60,6 +61,8 @@ envar_name=$TMPDIR/$0-envname.$$
 envar_val=$TMPDIR/$0-envval.$$
 apath=$TMPDIR/$0-apath.$$
 afile=$TMPDIR/$0-afile.$$
+miscpath=$TMPDIR/$0-miscpath.$$
+miscfile=$TMPDIR/$0-miscfile.$$
 
 # Output script header
 echo "#!/bin/bash"
@@ -71,24 +74,31 @@ cat << EOF
 
 EOF
 
+# Regulare expressions match 
+# VAR = ' foo bar '
+# VAR = ' one ',
+#       ' two ',
+#       ' three '
+# Leading and trailing spaces are removed from values (internal spaces preserved)
+# Matches are done between the variable declaration and the next line not ending with ,
+function basis_var {
+    file=$1
+    var=$2
+    # Match only multiple values
+    sed -n $file -e '/\<'"$var"'=.*,\s*$/,/[^,]\s*$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?\s*$|\1|p'
+    # Match only one value
+    sed -n $file -e 's|\<'"$var"'\s*=\s*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*$|\1|p'
+}
+paste <(basis_var $1 ENVAR_NAME) <(basis_var $1 ENVAR_VAL) --delimiters="="
+
 # Handle multiple basis files
 for file in "$@"; do
     echo "#===================="
     echo "# $file";
     echo "#===================="
 
-    # Regulare expressions match 
-    # VAR = ' foo bar '
-    # VAR = ' one ',
-    #       ' two ',
-    #       ' three '
-    # Leading and trailing spaces are removed from values (internal spaces preserved)
-    # Matches are done between the variable declaration and the next line not ending with ,
-
     echo "# UMUI Environment variables"
-    sed -n $file -e '/\<ENVAR_NAME=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' > $envar_name
-    sed -n $file -e '/\<ENVAR_VAL=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' > $envar_val
-    paste --delimiters="=" $envar_name $envar_val
+    paste <(basis_var $file ENVAR_NAME) <(basis_var $file ENVAR_VAL) --delimiters="="
     echo
 
     echo "# List of referenced files"
@@ -99,7 +109,7 @@ for file in "$@"; do
     sed -n $file -e '/\<AFILE=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' > $afile
     paste --delimiters="/" $apath $afile
     echo
-    
+
     # Hand edits
     sed -n $file -e '/\<HEDFILE=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p'
     echo
@@ -110,8 +120,38 @@ for file in "$@"; do
     sed -n $file -e '/\<USRP_FILE_A=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p'
     echo
 
+    # Override files
+    sed -n $file -e '/\<UMCOMP_OP=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p'
+    sed -n $file -e '/\<UFCOMP_OP=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p'
+    echo
+
+    # Misc files
+    rm -f $miscpath $miscfile
+    # Input Dump
+    sed -n $file -e '/\<PATH21=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscpath
+    sed -n $file -e '/\<FILE21=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscfile
+    # LBCs
+    sed -n $file -e '/\<PATH95=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscpath
+    sed -n $file -e '/\<FILE95=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscfile
+    # Radiation
+    sed -n $file -e '/\<PATHSW=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscpath
+    sed -n $file -e '/\<FILESW=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscfile
+    sed -n $file -e '/\<PATHSW=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscpath
+    sed -n $file -e '/\<FILESWD=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscfile
+    sed -n $file -e '/\<PATHLW=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscpath
+    sed -n $file -e '/\<FILELW=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscfile
+    sed -n $file -e '/\<PATHLW=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscpath
+    sed -n $file -e '/\<FILELWD=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscfile
+    # Vert levels
+    sed -n $file -e '/\<VLEV_PATH=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscpath
+    sed -n $file -e '/\<VLEV_FILE=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscfile
+    # Random Seed
+    sed -n $file -e '/\<RSEED_PATH=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscpath
+    sed -n $file -e '/\<RSEED_FILE=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscfile
+    paste --delimiters="/" $miscpath $miscfile
+
     echo "EOF"
     echo
 done
 
-rm -f $envar_name $envar_val $apath $afile
+rm -f $envar_name $envar_val $apath $afile $miscpath $miscfile
