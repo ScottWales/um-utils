@@ -56,14 +56,6 @@ if [ "$#" -lt 1 ]; then
     exit 1
 fi
 
-# Hold parts in separate temp files, to be pasted together in the output
-envar_name=$TMPDIR/$0-envname.$$
-envar_val=$TMPDIR/$0-envval.$$
-apath=$TMPDIR/$0-apath.$$
-afile=$TMPDIR/$0-afile.$$
-miscpath=$TMPDIR/$0-miscpath.$$
-miscfile=$TMPDIR/$0-miscfile.$$
-
 # Output script header
 echo "#!/bin/bash"
 cat << EOF
@@ -87,9 +79,8 @@ function basis_var {
     # Match only multiple values
     sed -n $file -e '/\<'"$var"'=.*,\s*$/,/[^,]\s*$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?\s*$|\1|p'
     # Match only one value
-    sed -n $file -e 's|\<'"$var"'\s*=\s*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*$|\1|p'
+    sed -n $file -e 's|.*\<'"$var"'\s*=\s*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*$|\1|p'
 }
-paste <(basis_var $1 ENVAR_NAME) <(basis_var $1 ENVAR_VAL) --delimiters="="
 
 # Handle multiple basis files
 for file in "$@"; do
@@ -105,53 +96,40 @@ for file in "$@"; do
     echo "cat << EOF"
 
     # Ancillaries
-    sed -n $file -e '/\<APATH=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' > $apath
-    sed -n $file -e '/\<AFILE=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' > $afile
-    paste --delimiters="/" $apath $afile
+    paste <(basis_var $file APATH) <(basis_var $file AFILE) --delimiters="/"
     echo
 
     # Hand edits
-    sed -n $file -e '/\<HEDFILE=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p'
+    basis_var $file HEDFILE
     echo
 
     # Stashmaster, User Stash and Stash Prognostics
-    sed -n $file -e '/\<SMDIR=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1/STASHmaster_A|p'
-    sed -n $file -e '/\<USERLST_A=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p'
-    sed -n $file -e '/\<USRP_FILE_A=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p'
+    paste <(basis_var $file SMDIR) <(echo "STASHmaster_A") --delimiters="/"
+    basis_var $file USERLST_A
+    basis_var $file USRP_FILE_A
     echo
 
     # Override files
-    sed -n $file -e '/\<UMCOMP_OP=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p'
-    sed -n $file -e '/\<UFCOMP_OP=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p'
+    basis_var $file UMCOMP_OP
+    basis_var $file UFCOMP_OP
     echo
 
     # Misc files
-    rm -f $miscpath $miscfile
     # Input Dump
-    sed -n $file -e '/\<PATH21=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscpath
-    sed -n $file -e '/\<FILE21=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscfile
+    paste <(basis_var $file PATH21) <(basis_var $file FILE21) --delimiters="/"
     # LBCs
-    sed -n $file -e '/\<PATH95=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscpath
-    sed -n $file -e '/\<FILE95=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscfile
+    paste <(basis_var $file PATH95) <(basis_var $file FILE95) --delimiters="/"
     # Radiation
-    sed -n $file -e '/\<PATHSW=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscpath
-    sed -n $file -e '/\<FILESW=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscfile
-    sed -n $file -e '/\<PATHSW=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscpath
-    sed -n $file -e '/\<FILESWD=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscfile
-    sed -n $file -e '/\<PATHLW=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscpath
-    sed -n $file -e '/\<FILELW=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscfile
-    sed -n $file -e '/\<PATHLW=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscpath
-    sed -n $file -e '/\<FILELWD=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscfile
+    paste <(basis_var $file PATHSW) <(basis_var $file FILESW) --delimiters="/"
+    paste <(basis_var $file PATHSW) <(basis_var $file FILESW) --delimiters="/"
+    paste <(basis_var $file PATHLW) <(basis_var $file FILELWD) --delimiters="/"
+    paste <(basis_var $file PATHLW) <(basis_var $file FILELWD) --delimiters="/"
     # Vert levels
-    sed -n $file -e '/\<VLEV_PATH=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscpath
-    sed -n $file -e '/\<VLEV_FILE=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscfile
+    paste <(basis_var $file VLEV_PATH) <(basis_var $file VLEV_FILE) --delimiters="/"
     # Random Seed
-    sed -n $file -e '/\<RSEED_PATH=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscpath
-    sed -n $file -e '/\<RSEED_FILE=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p' >> $miscfile
-    paste --delimiters="/" $miscpath $miscfile
+    paste <(basis_var $file RSEED_PATH) <(basis_var $file RSEED_FILE) --delimiters="/"
 
     echo "EOF"
     echo
 done
 
-rm -f $envar_name $envar_val $apath $afile $miscpath $miscfile
