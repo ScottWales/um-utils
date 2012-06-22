@@ -3,9 +3,23 @@
 # ./um-dependancies
 # Create a script that lists file dependancies of UMUI basis files.
 #
-# AUTHORS:
-# Scott Wales <scott.wales@unimelb.edu.au>
-# ARC Centre of Excellence for Climate System Science 
+# A script is created because environment variables may be set up differently
+# on the local and remote machines. Running the script will produce a list of
+# files. Note that even if a file is referenced in a UM basis that file may
+# be ignored due to other configuration options.
+#
+# Intended usage is:
+# for file in $(bash <(um-dependancies BASIS)); do
+#     if [ -f $file ]; then
+#         echo $file
+#     fi
+# done
+# (Substitute the echo as required). The environment should be the same as it
+# is when you run the UM.
+#
+# AUTHORS: 
+# Scott Wales <scott.wales@unimelb.edu.au> 
+# ARC Centre of Excellence for Climate System Science
 # <climate_help@nf.nci.org.au>
 #
 # Available at https://github.com/ScottWales/um-utils
@@ -13,23 +27,18 @@
 # ----------------------------------------------------------------------
 # Copyright 2012 ARC Centre of Excellence for Climate System Science
 # 
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not
+# use this file except in compliance with the License.  You may obtain a copy
+# of the License at
 # 
 # http://www.apache.org/licenses/LICENSE-2.0
 # 
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+# License for the specific language governing permissions and limitations under
+# the License.
 # ----------------------------------------------------------------------
-#
-# A script is created because environment variables may be set up differently
-# on the local and remote machines. Running the script will produce a list of
-# files. Note that even if a file is referenced in a UM basis that file may
-# be ignored due to other configuration options.
 #
 
 function usage {
