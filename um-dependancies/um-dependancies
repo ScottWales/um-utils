@@ -105,7 +105,7 @@ for file in "$@"; do
     echo
 
     # Stashmaster, User Stash and Stash Prognostics
-    sed -n $file -e '/\<SMDIR=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1/STASHMASTER_A|p'
+    sed -n $file -e '/\<SMDIR=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1/STASHmaster_A|p'
     sed -n $file -e '/\<USERLST_A=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p'
     sed -n $file -e '/\<USRP_FILE_A=/,/[^,]$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?.*|\1|p'
     echo
