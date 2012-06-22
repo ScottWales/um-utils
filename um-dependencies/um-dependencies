@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-# ./um-dependancies
-# Create a script that lists file dependancies of UMUI basis files.
+# ./um-dependencies
+# Create a script that lists file dependencies of UMUI basis files.
 #
 # A script is created because environment variables may be set up differently
 # on the local and remote machines. Running the script will produce a list of
@@ -9,7 +9,7 @@
 # be ignored due to other configuration options.
 #
 # Intended usage is:
-# for file in $(bash <(um-dependancies BASIS)); do
+# for file in $(bash <(um-dependencies BASIS)); do
 #     if [ -f $file ]; then
 #         echo $file
 #     fi
@@ -19,8 +19,7 @@
 #
 # AUTHORS: 
 # Scott Wales <scott.wales@unimelb.edu.au> 
-# ARC Centre of Excellence for Climate System Science
-# <climate_help@nf.nci.org.au>
+# ARC Centre of Excellence for Climate System Science <climate_help@nf.nci.org.au>
 #
 # Available at https://github.com/ScottWales/um-utils
 #
@@ -42,7 +41,7 @@
 #
 
 function usage {
-    echo "$0: Create a script to list UM file dependancies"
+    echo "$0: Create a script to list UM file dependencies"
     echo "Usage: $0 INPUTS ... > OUTPUT"
     echo "INPUTS: UM basis files"
     echo "OUTPUT: Shell script that when run lists used files"
