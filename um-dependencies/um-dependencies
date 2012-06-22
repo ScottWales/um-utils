@@ -74,6 +74,9 @@ cat << EOF
 
 EOF
 
+# Find a specific variable in a UM Basis file.
+# Usage: basis_var FILE VARIABLE_NAME
+#
 # Regulare expressions match 
 # VAR = ' foo bar '
 # VAR = ' one ',
