@@ -132,8 +132,8 @@ for file in "$@"; do
     paste <(basis_var $file PATH95) <(basis_var $file FILE95) --delimiters="/"
     # Radiation
     paste <(basis_var $file PATHSW) <(basis_var $file FILESW) --delimiters="/"
-    paste <(basis_var $file PATHSW) <(basis_var $file FILESW) --delimiters="/"
-    paste <(basis_var $file PATHLW) <(basis_var $file FILELWD) --delimiters="/"
+    paste <(basis_var $file PATHSW) <(basis_var $file FILESWD) --delimiters="/"
+    paste <(basis_var $file PATHLW) <(basis_var $file FILELW) --delimiters="/"
     paste <(basis_var $file PATHLW) <(basis_var $file FILELWD) --delimiters="/"
     # Vert levels
     paste <(basis_var $file VLEV_PATH) <(basis_var $file VLEV_FILE) --delimiters="/"
