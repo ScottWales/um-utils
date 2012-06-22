@@ -53,14 +53,15 @@ eval set -- "$options"
 while true; do
     case "$1" in
         -h|--help)
-            usage; shift ;;
+            usage; exit; shift ;;
         --)
             shift; break ;;
     esac
 done
 
 if [ "$#" -lt 1 ]; then
-    echo "No input" >&2
+    echo "ERROR: No input" >&2
+    usage
     exit 1
 fi
 
