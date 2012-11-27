@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# Package a UMUI basis file to be copied between computers
+
+function usage {
+    echo "Usage: $0 BASIS" >&2
+    exit 1
+}
+
+basis=$1
+if [ ! -f "$basis" ]; then
+    usage
+fi
+
+jobid=$(sed -n $basis -e "s/\s*RUN_ID='\(.*\)'\s*/\1/p")
+echo "Packaging $jobid..."
+
+function basis_var {
+    var=$1
+    # Match only multiple values
+    sed -n $basis -e '/\<'"$var"'=.*,\s*$/,/[^,]\s*$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?\s*$|\1|p'
+    # Match only one value
+    sed -n $basis -e 's|.*\<'"$var"'\s*=\s*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*$|\1|p'
+}
+function copy_files {
+    dest=$1
+    mkdir -p $dest
+    for file in $files; do
+        realfile=$(echo $file | sed "s|\~/|~$USER/|")
+        if [ -f "$realfile" ]; then
+            cp -v $realfile $dest
+        fi
+    done
+}
+
+# Load environment variables
+tmp=$(mktemp)
+cat  <(paste --delimiters="=" <(basis_var ENVAR_NAME) <(basis_var ENVAR_VAL)) > $tmp
+cat $tmp
+source $tmp
+
+# Hand edit files
+files="$(basis_var HEDFILE) $(basis_var STDCPLMACRO)"
+copy_files $jobid/hand_edits
+
+# Ancil files
+files="$(paste --delimiters="/" <(basis_var PATH20) <(basis_var FILE20)) "
+files+="$(paste --delimiters="/" <(basis_var APATH) <(basis_var AFILE)) "
+files+="$(paste --delimiters="/" <(basis_var PATHSW) <(basis_var FILESW)) "
+files+="$(paste --delimiters="/" <(basis_var PATHLW) <(basis_var FILELW)) "
+copy_files $jobid/ancils
+
+# Stash files
+files=$(basis_var USERLST_A)
+copy_files $jobid/stash
+
+# Overrides
+files="$(basis_var UFCOMP_OP) $(basis_var UMCOMP_OP)"
+copy_files $jobid/overrides
+
+# Copy the basis
+cp -v $basis $jobid/basis
+
+# Need to edit the basis paths
