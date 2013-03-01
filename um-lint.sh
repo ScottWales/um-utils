@@ -66,6 +66,58 @@ function check_var {
 }
 
 for file in "$@"; do
+    # Basic set-up
     check_var $file USERID '\$USER'
     check_var $file TIC '\(\$PROJECT\|s*\)'
+    check_var $file MACH_OTHER 'vayu'
+    check_var $file SUBMIT_METHOD '0'
+
+    # Log Files
+    check_var $file PRINT_STATUS 'PrStatus_Normal'
+    check_var $file UIPRINT 'N'
+    check_var $file RCF_PRINTSTATUS '2'
+
+    # Output directories
+    check_var $file DATAM '\$DATAOUTPUT/\$USER/\$RUNID'
+    check_var $file DATAW '\$DATAOUTPUT/\$USER/\$RUNID'
+
+    # Environment directories
+    check_var $file ENVAR_VAL '/data/projects/access/.*'
+
+    # Hand edits
+    check_var $file HEDFILE '\(~access/umdir/.*\|~access/umui_jobs/hand_edits/.*\)'
+    check_var $file USE_HEDFILE 'Y'
+
+    # FCM
+    check_var $file UMFCM_OUTDIR '\$HOME/UM_OUTDIR'
+    check_var $file UMFCM_ROUTDIR '\$DATAOUTPUT'
+    check_var $file LFULL_EXT 'N'
+    check_var $file FCM_VERB_EXT '1'
+    check_var $file FCM_OUT_EXT '\$UM_OUTDIR/ext.out'
+    check_var $file LFULL_BLD 'N'
+    check_var $file FCM_VERB_BLD '1'
+
+    # Branches
+    check_var $file FCM_USRBRN_USE 'Y'
+    check_var $file LFCM_USRWRKCP 'N'
+
+    # Build - Model
+    check_var $file OMUC '1'
+    check_var $file FCM_COMP_GEN 'safe'
+    check_var $file PATHEXEC '\$DATAW/bin'
+    check_var $file FILEEXEC '\$RUNID.exe'
+    check_var $file CONSD 'N'
+
+    # Build - Recon
+    check_var $file RECEX '1'
+    check_var $file PATHREC '\$DATAW/bin'
+    check_var $file FILEREC 'qxreconf'
+
+    # Overrides
+    check_var $file UMUSE_COP 'Y'
+    check_var $file UFUSE_OP 'Y'
+
+    # Input files
+    check_var $file PATH20 '\$[A-Za-z0-9_]\+'
+    check_var $file APATH '\$[A-Za-z0-9_]\+'
 done
