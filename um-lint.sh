@@ -42,6 +42,8 @@ if [ "$#" -lt 1 ]; then
     exit 1
 fi
 
+# basis_var(file, variable)
+#   Get the value of variable in file
 function basis_var {
     file=$1
     var=$2
@@ -51,12 +53,16 @@ function basis_var {
     sed -n $file -e 's|.*\<'"$var"'\s*=\s*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*$|\1|p'
 }
 
+# check_var(file, variable, pattern)
+#   Checks all values in variable match pattern, if they don't print an error
+#   message for each case
 function check_var {
     file=$1
-    var=$2
-    match=$3
+    variable=$2
+    pattern=$3
 
-    basis_var $file $var | sed '/^'${match}'$/d' | wc -l
+    basis_var $file $variable | sed '/^'${pattern}'$/d' | \
+        sed -n 's|.*|'$(basename $file)': ERROR in '$variable', was "\0" but should match /'$pattern'/|p'
 }
 
 for file in "$@"; do
