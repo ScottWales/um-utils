@@ -62,4 +62,4 @@ function check_var {
 for file in "$@"; do
     check_var $file USERID '\$USER'
     check_var $file TIC '\(\$PROJECT\|s*\)'
-end
+done

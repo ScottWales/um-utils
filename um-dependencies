@@ -89,7 +89,7 @@ function basis_var {
     file=$1
     var=$2
     # Match only multiple values
-    sed -n $file -e '/\<'"$var"'=.*,\s*$/,/[^,]\s*$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*,\?\s*$|\1|p'
+    sed -n $file -e '/\<'"$var"'=.*,\s*$/,/[^,]\s*$/s|.*'"'"'\s*\(\S\(.*\S\)\?\)\?\s*'"'"'\s*,\?\s*$|\1|p'
     # Match only one value
     sed -n $file -e 's|.*\<'"$var"'\s*=\s*'"'"'\s*\(\S\(.*\S\)\?\)\s*'"'"'\s*$|\1|p'
 }
@@ -101,14 +101,14 @@ for file in "$@"; do
     echo "#===================="
 
     echo "# UMUI Environment variables"
-    paste <(basis_var $file ENVAR_NAME) <(basis_var $file ENVAR_VAL) --delimiters="="
+    paste <(basis_var $file ENVAR_NAME) <(basis_var $file ENVAR_VAL) --delimiters="=" | sed '/^=$/d'
     echo
 
     echo "# List of referenced files"
     echo "cat << EOF"
 
     # Ancillaries
-    paste <(basis_var $file APATH) <(basis_var $file AFILE) --delimiters="/"
+    paste <(basis_var $file APATH) <(basis_var $file AFILE) --delimiters="/" | sed '/^\/$/d'
     echo
 
     # Hand edits
@@ -116,7 +116,7 @@ for file in "$@"; do
     echo
 
     # Stashmaster, User Stash and Stash Prognostics
-    paste <(basis_var $file SMDIR) <(echo "STASHmaster_A") --delimiters="/"
+    paste <(basis_var $file SMDIR) <(echo "STASHmaster_A") --delimiters="/" | sed '/^\/$/d'
     basis_var $file USERLST_A
     basis_var $file USRP_FILE_A
     echo
@@ -128,18 +128,18 @@ for file in "$@"; do
 
     # Misc files
     # Input Dump
-    paste <(basis_var $file PATH21) <(basis_var $file FILE21) --delimiters="/"
+    paste <(basis_var $file PATH21) <(basis_var $file FILE21) --delimiters="/" | sed '/^\/$/d'
     # LBCs
-    paste <(basis_var $file PATH95) <(basis_var $file FILE95) --delimiters="/"
+    paste <(basis_var $file PATH95) <(basis_var $file FILE95) --delimiters="/" | sed '/^\/$/d'
     # Radiation
-    paste <(basis_var $file PATHSW) <(basis_var $file FILESW) --delimiters="/"
-    paste <(basis_var $file PATHSW) <(basis_var $file FILESWD) --delimiters="/"
-    paste <(basis_var $file PATHLW) <(basis_var $file FILELW) --delimiters="/"
-    paste <(basis_var $file PATHLW) <(basis_var $file FILELWD) --delimiters="/"
+    paste <(basis_var $file PATHSW) <(basis_var $file FILESW) --delimiters="/" | sed '/^\/$/d'
+    paste <(basis_var $file PATHSW) <(basis_var $file FILESWD) --delimiters="/" | sed '/^\/$/d'
+    paste <(basis_var $file PATHLW) <(basis_var $file FILELW) --delimiters="/" | sed '/^\/$/d'
+    paste <(basis_var $file PATHLW) <(basis_var $file FILELWD) --delimiters="/" | sed '/^\/$/d'
     # Vert levels
-    paste <(basis_var $file VLEV_PATH) <(basis_var $file VLEV_FILE) --delimiters="/"
+    paste <(basis_var $file VLEV_PATH) <(basis_var $file VLEV_FILE) --delimiters="/" | sed '/^\/$/d'
     # Random Seed
-    paste <(basis_var $file RSEED_PATH) <(basis_var $file RSEED_FILE) --delimiters="/"
+    paste <(basis_var $file RSEED_PATH) <(basis_var $file RSEED_FILE) --delimiters="/" | sed '/^\/$/d'
 
     echo "EOF"
     echo
