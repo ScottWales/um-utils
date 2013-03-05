@@ -61,8 +61,8 @@ function check_var {
     variable=$2
     pattern=$3
 
-    basis_var $file $variable | sed '/^'${pattern}'$/d' | \
-        sed -n 's|.*|'$(basename $file)': ERROR in '$variable', was "\0" but should match /'$pattern'/|p'
+    basis_var $file $variable | sed '\!^'${pattern}'$!d' | \
+        sed -n 's!.*!'$(basename $file)': ERROR in '$variable', was "\0" but should match /'$pattern'/!p'
 }
 
 for file in "$@"; do
