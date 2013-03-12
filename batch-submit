@@ -46,10 +46,12 @@ fi
 basisdir=$1
 basis=$(basename $basisdir)
 
+echo "Reading SST filenames from standard input..."
+
 while read sst_file ; do
     # Store the files in a separate directory so they're not deleted
     # by run scripts
-    jobdir=~/um_batch/$basis-$sst_file
+    jobdir=~/um_batch/$basis-$(basename $sst_file)
     mkdir -p $(dirname $jobdir)
     cp -r $basisdir $jobdir
 
