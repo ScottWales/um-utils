@@ -69,6 +69,18 @@ def decodetime(clock, code):
                 month,
                 day,
                 hour)
+    elif clock = "long":
+        century = int(code[0],36)
+        century_year = int(code[1:3])
+        month = code[3:-1]
+        if month in month2:
+            month = month2.index(month) + 1
+        elif month in season2:
+            month = season2.index(month) + 1
+        else:
+            month = int(month,12)
+        day = int(code[-1],31)
+        
 
 name = sys.argv[1]
 
