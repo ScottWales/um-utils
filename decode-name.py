@@ -17,8 +17,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
-import sys
 import re
 
 month3 = "jan feb mar apr may jun jul aug sep oct nov dec".split()
@@ -62,60 +60,64 @@ ppcode    = {'a':'STASH stream "a"',
 
 def filetype(code):
     if code[0] == "d":
-        return dumpcode.get(code[1],'unknown') + ' model dump'
+        return ('model dump',dumpcode.get(code[1],'unknown'))
     elif code[0] == "p":
-        return ppcode.get(code[1],'unknown') + ' processed file'
+        return ('processed file',ppcode.get(code[1],'unknown'))
     else:
-        return "unknown"
+        return ('unknown','unknown')
 def decodetime(clock, code):
     if clock == "standard":
-        decade = int(code[0],36)
+        decade = 180 + int(code[0],36)
         decade_year = int(code[1])
-        if code[2:] in month3 or code[2:] in season3:
-            return "%03d%d-%s"%(
-                    decade,
-                    decade_year,
-                    code[2:])
+        if code[2:] in month3:
+            month = month3.index(code[2:]) + 1
+            day = 0
+            hour = 0
+        elif code[2:] in season3:
+            month = season3.index(code[2:]) + 1
+            day = 0
+            hour = 0
         else:
             month = int(code[2],12)
             day = int(code[3],31)
             hour = int(code[4],24)
-            return "%03d%d-%02d-%02dT%02d:00:00"%(
-                    decade,
-                    decade_year,
-                    month,
-                    day,
-                    hour)
+        return "%03d%d-%02d-%02dT%02d"%(
+                decade,
+                decade_year,
+                month,
+                day,
+                hour)
     elif clock == "long":
         century = int(code[0],36)
         century_year = int(code[1:3])
-        if code[2:] in month2 or code[2:] in season2:
-            return "%02d%02d-%s"%(
-                    century,
-                    century_year,
-                    code[2:])
+        if code[2:] in month2:
+            month = month2.index(code[2:]) + 1
+            day = 0
+        elif code[2:] in season2:
+            month = season2.index(code[2:]) + 1
+            day = 0
         else:
             month = int(code[2],12)
             day = int(code[3],31)
-            return "%02d%02d-%02d-%02d"%(
-                    century,
-                    century_year,
-                    month,
-                    day)
+        return "%02d%02d-%02d-%02d"%(
+                century,
+                century_year,
+                month,
+                day)
     else:
         return "unknown"
         
+def decode(name):
+    out = {}
+    out['jobid'] = name[0:5]
+    out['model'] = modelcode.get(name[5],'unknown')
+    out['clock'] = clockcode.get(name[6],'unknown')
+    out['type']  = filetype(name[7:9])
+    out['date']  = decodetime(out['clock'],name[9:])
+    return out
 
-name = sys.argv[1]
-
-jobid = name[0:5]
-model = modelcode.get(name[5],'unknown')
-clock = clockcode.get(name[6],'unknown')
-file  = filetype(name[7:9])
-time  = decodetime(clock,name[9:])
-
-print "Job ID " + jobid
-print "Model type " + model
-print "Clock " + clock
-print "File " + file
-print "Time " + time
+if name == "__main__":
+    import sys
+    name = sys.argv[1]
+    traits = decode(name)
+    print traits
