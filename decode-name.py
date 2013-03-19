@@ -41,16 +41,16 @@ dumpcode  = {'a':'instantaneous',
              '2':'period 2 mean',
              '3':'period 3 mean',
              '4':'period 4 mean'}
-ppcode    = {'a':'STASH stream a',
-             'b':'STASH stream b',
-             'c':'STASH stream c',
-             'd':'STASH stream d',
-             'e':'STASH stream e',
-             'f':'STASH stream f',
-             'g':'STASH stream g',
-             'h':'STASH stream h',
-             'i':'STASH stream i',
-             'j':'STASH stream j',
+ppcode    = {'a':'STASH stream "a"',
+             'b':'STASH stream "b"',
+             'c':'STASH stream "c"',
+             'd':'STASH stream "d"',
+             'e':'STASH stream "e"',
+             'f':'STASH stream "f"',
+             'g':'STASH stream "g"',
+             'h':'STASH stream "h"',
+             'i':'STASH stream "i"',
+             'j':'STASH stream "j"',
              't':'ten-day mean',
              'm':'monthly mean',
              's':'seasonal mean',
@@ -62,49 +62,46 @@ ppcode    = {'a':'STASH stream a',
 
 def filetype(code):
     if code[0] == "d":
-        return "dump of " + dumptype(code[1])
-    else:
-        return "unknown"
-def dumptype(code):
-    if re.match('[a-j]',code):
-        return "STASH stream " + code
+        return dumpcode.get(code[1],'unknown') + ' model dump'
+    elif code[0] == "p":
+        return ppcode.get(code[1],'unknown') + ' processed file'
     else:
         return "unknown"
 def decodetime(clock, code):
     if clock == "standard":
         decade = int(code[0],36)
         decade_year = int(code[1])
-        month = code[2:-2]
-        if month in month3:
-            month = month3.index(month) + 1
-        elif month in season3:
-            month = season3.index(month) + 1
+        if code[2:] in month3 or code[2:] in season3:
+            return "%03d%d-%s"%(
+                    decade,
+                    decade_year,
+                    code[2:])
         else:
             month = int(month,12)
-        day = int(code[-2],31)
-        hour = int(code[-1],24)
-        return "%03d%d-%02d-%02dT%02d:00:00"%(
-                decade,
-                decade_year,
-                month,
-                day,
-                hour)
+            day = int(code[-2],31)
+            hour = int(code[-1],24)
+            return "%03d%d-%02d-%02dT%02d:00:00"%(
+                    decade,
+                    decade_year,
+                    month,
+                    day,
+                    hour)
     elif clock == "long":
         century = int(code[0],36)
         century_year = int(code[1:3])
-        month = code[3:-1]
-        if month in month2:
-            month = month2.index(month) + 1
-        elif month in season2:
-            month = season2.index(month) + 1
+        if code[2:] in month2 or code[2:] in season2:
+            return "%02d%02d-%s"%(
+                    century,
+                    century_year,
+                    code[2:])
         else:
-            month = int(month,12)
-        day = int(code[-1],31)
-        return "%02d%02d-%02d-%02d"%(
-                century,
-                century_year,
-                month,
-                day)
+            month = int(code[2],12)
+            day = int(code[3],31)
+            return "%02d%02d-%02d-%02d"%(
+                    century,
+                    century_year,
+                    month,
+                    day)
     else:
         return "unknown"
         
