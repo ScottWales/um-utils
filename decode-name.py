@@ -24,22 +24,12 @@ import re
 month3 = "jan feb mar apr may jun jul aug sep oct nov dec".split()
 season3 = "djf jfm fma mam amj mjj jja jas aso son ond ndj".split()
 
-def modeltype(code):
-    if code == "a":
-        return "atmosphere"
-    else:
-        return "unknown"
-def timetype(code):
-    if code == "_":
-        return "relative"
-    elif code == ".":
-        return "standard"
-    elif code == "-":
-        return "short"
-    elif code == "@":
-        return "long"
-    else:
-        return "unknown"
+modelcode = {'a':'atmosphere'}
+clockcode = {'_':'relative',
+             '.':'standard',
+             '-':'short',
+             '@':'long'}
+
 def filetype(code):
     if code[0] == "d":
         return "dump of " + dumptype(code[1])
@@ -69,7 +59,7 @@ def decodetime(clock, code):
                 month,
                 day,
                 hour)
-    elif clock = "long":
+    elif clock == "long":
         century = int(code[0],36)
         century_year = int(code[1:3])
         month = code[3:-1]
@@ -80,13 +70,20 @@ def decodetime(clock, code):
         else:
             month = int(month,12)
         day = int(code[-1],31)
+        return "%02d%02d-%02d-%02d"%(
+                century,
+                century_year,
+                month,
+                day)
+    else:
+        return "unknown"
         
 
 name = sys.argv[1]
 
 jobid = name[0:5]
-model = modeltype(name[5])
-clock = timetype(name[6])
+model = modelcode.get(name[5],'unknown')
+clock = clockcode.get(name[6],'unknown')
 file  = filetype(name[7:9])
 time  = decodetime(clock,name[9:])
 
