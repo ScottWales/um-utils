@@ -77,9 +77,9 @@ def decodetime(clock, code):
                     decade_year,
                     code[2:])
         else:
-            month = int(month,12)
-            day = int(code[-2],31)
-            hour = int(code[-1],24)
+            month = int(code[2],12)
+            day = int(code[3],31)
+            hour = int(code[4],24)
             return "%03d%d-%02d-%02dT%02d:00:00"%(
                     decade,
                     decade_year,
