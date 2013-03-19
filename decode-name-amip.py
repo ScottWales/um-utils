@@ -69,7 +69,7 @@ def filetype(code):
         return ('unknown','unknown')
 def decodetime(clock, code):
     if clock == "standard":
-        decade = int(code[0],36)
+        decade = 180 + int(code[0],36)
         decade_year = int(code[1])
         if code[2:] in month3:
             month = month3.index(code[2:]) + 1
@@ -115,7 +115,8 @@ def decode(name):
     out['model'] = modelcode.get(name[5],'unknown')
     out['clock'] = clockcode.get(name[6],'unknown')
     out['type']  = filetype(name[7:9])
-    out['date']  = decodetime(clock,name[9:])
+    out['date']  = decodetime(out['clock'],name[9:])
+    return out
 
 name = sys.argv[1]
 traits = decode(name)
@@ -125,6 +126,6 @@ streamcode = {'pa':'monthly',
               'pj':'3hourly',
               'ph':'hourly'}
 
-stream = streamcode.get(name[5:7],'unknown')
+stream = streamcode.get(name[7:9],'unknown')
 newname = '.'.join([traits['jobid'], stream, traits['date']])
 print newname
