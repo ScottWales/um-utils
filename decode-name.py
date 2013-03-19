@@ -116,8 +116,11 @@ def decode(name):
     out['date']  = decodetime(out['clock'],name[9:])
     return out
 
-if name == "__main__":
+if __name__ == "__main__":
     import sys
-    name = sys.argv[1]
-    traits = decode(name)
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("NAME", help="UM filename to decode")
+    args = parser.parse_args()
+    traits = decode(args.NAME)
     print traits
