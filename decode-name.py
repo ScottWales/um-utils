@@ -23,6 +23,8 @@ import re
 
 month3 = "jan feb mar apr may jun jul aug sep oct nov dec".split()
 season3 = "djf jfm fma mam amj mjj jja jas aso son ond ndj".split()
+month2 = "ja fb mr ar my jn jl ag sp ot nv dc".split()
+season2 = "df jm fa mm aj mj ja js ao sn od nj".split()
 
 modelcode = {'a':'atmosphere'}
 clockcode = {'_':'relative',
