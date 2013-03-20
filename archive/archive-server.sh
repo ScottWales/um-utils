@@ -18,18 +18,35 @@
 #  limitations under the License.
 #  
 
+# The model code will write a line to the archive server's STDIN like
+#
+#     %%% abcdea.daa000 ARCHIVE DUMP
+#
+# for each file that should be put into the archive.
+#
+# Dump files should be kept in UM format, but we want STASH outputs
+# to be in NetCDF with a useful filename
+#
+# The server runs until the file $LOCKFILE no longer exists, indicating the end
+# of the model run.
+
+RUNID=${RUNID:-test}
+
 # Monitor STDIN for new output
 while true; do
-    read magic filename request type
+    read magic FILE request type
 
     if [[ $? == 0 ]]; then
         if [[ ! "$magic" == "%%%" ]]; then continue; fi
-        if [[ "$request" == "ARCHIVE" ]]; then
-            archive $filename
+
+        if [[ "$request" == "ARCHIVE" && "$type" == "DUMP" ]]; then
+            netcp $FILE $USER/$RUNID/$FILE
+        elif [[ "$request" == "ARCHIVE" ]]; then
+            qsub -v FILE,RUNID archive.sh
         fi
     else
         # No new input
-        if [[ ! -f "$lockfile" ]]; then break; fi
+        if [[ ! -f "$LOCKFILE" ]]; then break; fi
         sleep 10
     fi
 done

@@ -39,7 +39,7 @@ function usage {
     echo "FILE and RUNID may also be passed in as environment variables of the same name" 1>&2
 }
 
-options=$(getopt --options hc --longoptions help,cleanup -- "$@")
+options=$(getopt --options hcn --longoptions help,cleanup,netcdf -- "$@")
 eval set -- "$options"
 cleanup=false
 netcdf=false
@@ -70,7 +70,8 @@ if [[ ! -f "$infile" ]]; then
     exit 2
 fi
 
-outfile=$(./decode.py $(basename $infile))
+# The output file will use a decoded timestamp
+outfile=$(decode-um-filename.py $(basename $infile))
 
 if [[ "$netcdf" == "true" ]]; then
     outfile=$outfile.nc

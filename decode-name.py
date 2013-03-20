@@ -119,7 +119,7 @@ def decode(name):
 if __name__ == "__main__":
     import sys
     import argparse
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="Decode a UM output file's name")
     parser.add_argument("NAME", help="UM filename to decode")
     args = parser.parse_args()
     traits = decode(args.NAME)
