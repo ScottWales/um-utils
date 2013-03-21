@@ -27,16 +27,18 @@
 #PBS -l walltime=10:00
 
 function usage {
-    echo "$0: Archive a UM output file to MDSS" 1>&2
-    echo 1>&2
-    echo "Usage: $0 [-h|--help] [-c|--cleanup] [-n|--netcdf] FILE RUNID" 1>&2
-    echo "    --help:    Print this help and exit" 1>&2
-    echo "    --cleanup: Remove the local file after copying" 1>&2
-    echo "    --netcdf:  Convert to netcdf format" 1>&2
-    echo 1>&2
-    echo "    FILE:      File to archive" 1>&2
-    echo "    RUNID:     Run id to store the file under" 1>&2
-    echo "FILE and RUNID may also be passed in as environment variables of the same name" 1>&2
+cat 1>&2 << EOF
+$0: Archive a UM output file to MDSS"
+
+Usage: $0 [-h|--help] [-c|--cleanup] [-n|--netcdf] FILE RUNID"
+    --help:    Print this help and exit"
+    --cleanup: Remove the local file after copying"
+    --netcdf:  Convert to netcdf format"
+
+    FILE:      File to archive"
+    RUNID:     Run id to store the file under"
+FILE and RUNID may also be passed in as environment variables of the same name"
+EOF
 }
 
 options=$(getopt --options hcn --longoptions help,cleanup,netcdf -- "$@")
