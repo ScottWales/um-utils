@@ -52,8 +52,6 @@ while true; do
             usage; exit; shift ;;
         -c|--cleanup)
             cleanup=true; shift ;;
-        -n|--netcdf)
-            netcdf=true; shift ;;
         --)
             shift; break ;;
     esac
@@ -74,15 +72,10 @@ if [[ ! -f "$infile" ]]; then
 fi
 
 # The output file will use a decoded timestamp
-outfile=$(decode-um-filename.py $(basename $infile))
+outfile=$(decode-um-filename.py $(basename $infile)).nc
 
-if [[ "$netcdf" == "true" ]]; then
-    outfile=$outfile.nc
-    # Convert to NetCDF with decoded name
-    um2netcdf.py -i $infile -o $outfile
-else
-    cp $infile $outfile
-fi
+# Convert to NetCDF with decoded name
+um2netcdf.py -i $infile -o $outfile
 
 # Compress and move to MDSS
 gzip $outfile
