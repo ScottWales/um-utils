@@ -30,10 +30,9 @@ function usage {
 cat 1>&2 << EOF
 $0: Archive a UM output file to MDSS"
 
-Usage: $0 [-h|--help] [-c|--cleanup] [-n|--netcdf] FILE [RUNID]"
+Usage: $0 [-h|--help] [-c|--cleanup] FILE [RUNID]"
     --help:    Print this help and exit"
     --cleanup: Remove the local file after copying"
-    --netcdf:  Convert to netcdf format"
 
     FILE:      File to archive"
     RUNID:     Run id to store the file under (default is 'test')"
