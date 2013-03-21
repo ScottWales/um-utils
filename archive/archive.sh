@@ -30,13 +30,13 @@ function usage {
 cat 1>&2 << EOF
 $0: Archive a UM output file to MDSS"
 
-Usage: $0 [-h|--help] [-c|--cleanup] [-n|--netcdf] FILE RUNID"
+Usage: $0 [-h|--help] [-c|--cleanup] [-n|--netcdf] FILE [RUNID]"
     --help:    Print this help and exit"
     --cleanup: Remove the local file after copying"
     --netcdf:  Convert to netcdf format"
 
     FILE:      File to archive"
-    RUNID:     Run id to store the file under"
+    RUNID:     Run id to store the file under (default is 'test')"
 FILE and RUNID may also be passed in as environment variables of the same name"
 EOF
 }
@@ -59,8 +59,9 @@ while true; do
     esac
 done
 
-infile="${1:-$FILE}"
-runid="${2:-$RUNID}"
+infile=${1:-$FILE}
+runid=${RUNID:-test}
+runid="${2:-$runid}"
 
 if [[ -z "$infile" || -z "$runid" ]]; then
     usage
