@@ -30,6 +30,11 @@ function usage {
 cat 1>&2 << EOF
 $0: Archive a UM output file to MDSS"
 
+This script converts the UM file to NetCDF using the ACCESS CMIP mappings,
+changes the filename to use an ISO date instead of the UM encoding, compresses
+the NetCDF file with gzip and copies it to MDSS under the directory
+\$USER/\$RUNID
+
 Usage: $0 [-h|--help] [-c|--cleanup] FILE [RUNID]"
     --help:    Print this help and exit"
     --cleanup: Remove the local file after copying"
