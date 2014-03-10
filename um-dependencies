@@ -104,6 +104,12 @@ for file in "$@"; do
     paste <(basis_var $file ENVAR_NAME) <(basis_var $file ENVAR_VAL) --delimiters="=" | sed '/^=$/d'
     echo
 
+    echo "# Run ID"
+    echo "RUNID=$(basis_var $file RUN_ID)"
+    echo "DATAW=$(basis_var $file DATAW)"
+    echo "DATAM=$(basis_var $file DATAM)"
+    echo
+
     echo "# List of referenced files"
     echo "cat << EOF"
 
